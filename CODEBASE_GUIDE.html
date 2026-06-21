@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apex AI — Codebase Guide</title>
+  <style>
+    /* ── Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Georgia', serif;
+      font-size: 15px;
+      line-height: 1.75;
+      color: #1a1a1a;
+      background: #fff;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 48px 40px;
+    }
+
+    /* ── Cover ── */
+    .cover {
+      text-align: center;
+      padding: 60px 0 40px;
+      border-bottom: 3px solid #1a1a1a;
+      margin-bottom: 48px;
+    }
+    .cover .tag {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 16px;
+    }
+    .cover h1 {
+      font-size: 36px;
+      font-weight: bold;
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+    }
+    .cover .subtitle {
+      font-size: 16px;
+      color: #555;
+      font-style: italic;
+    }
+    .cover .meta {
+      margin-top: 24px;
+      font-size: 13px;
+      color: #888;
+    }
+
+    /* ── TOC ── */
+    .toc {
+      background: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 24px 28px;
+      margin-bottom: 48px;
+    }
+    .toc h2 {
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 14px;
+      font-family: 'Courier New', monospace;
+    }
+    .toc ol {
+      padding-left: 20px;
+    }
+    .toc li {
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+    .toc a {
+      color: #1a1a1a;
+      text-decoration: none;
+      border-bottom: 1px dotted #aaa;
+    }
+    .toc .toc-sub {
+      font-size: 13px;
+      color: #666;
+      display: block;
+      margin-left: 8px;
+    }
+
+    /* ── Sections ── */
+    section {
+      margin-bottom: 56px;
+      page-break-inside: avoid;
+    }
+    h2 {
+      font-size: 22px;
+      font-weight: bold;
+      border-bottom: 2px solid #1a1a1a;
+      padding-bottom: 6px;
+      margin-bottom: 20px;
+      margin-top: 48px;
+    }
+    h3 {
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 28px;
+      margin-bottom: 10px;
+      color: #1a1a1a;
+    }
+    h4 {
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 20px;
+      margin-bottom: 6px;
+      color: #333;
+      font-family: 'Courier New', monospace;
+    }
+    p {
+      margin-bottom: 14px;
+    }
+
+    /* ── Code ── */
+    pre {
+      background: #f4f4f4;
+      border: 1px solid #ddd;
+      border-left: 4px solid #1a1a1a;
+      border-radius: 4px;
+      padding: 16px 18px;
+      font-family: 'Courier New', monospace;
+      font-size: 12.5px;
+      line-height: 1.6;
+      overflow-x: auto;
+      margin: 14px 0 18px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    code {
+      font-family: 'Courier New', monospace;
+      font-size: 12.5px;
+      background: #f0f0f0;
+      padding: 1px 5px;
+      border-radius: 3px;
+      border: 1px solid #ddd;
+    }
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+    }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 22px;
+      font-size: 13.5px;
+    }
+    th {
+      background: #1a1a1a;
+      color: #fff;
+      padding: 9px 14px;
+      text-align: left;
+      font-weight: bold;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+    }
+    td {
+      padding: 9px 14px;
+      border-bottom: 1px solid #e5e5e5;
+      vertical-align: top;
+    }
+    tr:nth-child(even) td {
+      background: #f9f9f9;
+    }
+    td code {
+      font-size: 11.5px;
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      border: 1px solid #ddd;
+      border-left: 4px solid #555;
+      border-radius: 4px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 14px;
+      background: #fafafa;
+    }
+    .callout.rule {
+      border-left-color: #c00;
+      background: #fff8f8;
+    }
+    .callout.tip {
+      border-left-color: #0066cc;
+      background: #f5f9ff;
+    }
+    .callout strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* ── Error blocks ── */
+    .error-block {
+      background: #fff8f8;
+      border: 1px solid #f5c6c6;
+      border-radius: 6px;
+      padding: 18px 20px;
+      margin: 18px 0 24px;
+      page-break-inside: avoid;
+    }
+    .error-block .error-title {
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .error-badge {
+      background: #c00;
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.5px;
+    }
+    .fix-block {
+      background: #f5fff8;
+      border: 1px solid #b3e6c0;
+      border-radius: 6px;
+      padding: 18px 20px;
+      margin: 10px 0 24px;
+      page-break-inside: avoid;
+    }
+    .fix-block .fix-title {
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 10px;
+      color: #1a6b2e;
+    }
+
+    /* ── Diagram ── */
+    .diagram {
+      background: #f4f4f4;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 18px 22px;
+      font-family: 'Courier New', monospace;
+      font-size: 12.5px;
+      line-height: 1.8;
+      margin: 14px 0 18px;
+    }
+
+    /* ── Flow steps ── */
+    .flow {
+      counter-reset: step;
+      list-style: none;
+      padding: 0;
+      margin: 16px 0;
+    }
+    .flow li {
+      counter-increment: step;
+      display: flex;
+      gap: 14px;
+      margin-bottom: 12px;
+      align-items: flex-start;
+    }
+    .flow li::before {
+      content: counter(step);
+      background: #1a1a1a;
+      color: #fff;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* ── Package badge ── */
+    .pkg {
+      display: inline-block;
+      font-family: 'Courier New', monospace;
+      font-size: 11.5px;
+      background: #1a1a1a;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 3px;
+      margin: 1px 2px;
+    }
+    .pkg.provider { background: #5c3d8f; }
+    .pkg.react    { background: #0066cc; }
+    .pkg.core     { background: #1a6b2e; }
+
+    /* ── Print ── */
+    @media print {
+      body { padding: 0; font-size: 13px; }
+      h2 { page-break-before: always; }
+      h2:first-of-type { page-break-before: avoid; }
+      .cover { page-break-after: always; }
+      .toc   { page-break-after: always; }
+      pre, .error-block, .fix-block, table { page-break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+
+    ul, ol {
+      padding-left: 22px;
+      margin-bottom: 14px;
+    }
+    li { margin-bottom: 5px; }
+
+    hr {
+      border: none;
+      border-top: 1px solid #ddd;
+      margin: 32px 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════ COVER ══════════════════ -->
+<div class="cover">
+  <div class="tag">Apex AI · Technical Reference</div>
+  <h1>Codebase Guide</h1>
+  <div class="subtitle">How the app works, key patterns, and a full debugging post-mortem</div>
+  <div class="meta">Next.js 16 · Vercel AI SDK v6 · @ai-sdk/react v3 · Claude Sonnet 4.6</div>
+</div>
+
+<!-- ══════════════════ TOC ══════════════════ -->
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#arch">Architecture Overview</a></li>
+    <li><a href="#packages">The Three Package Roles</a></li>
+    <li><a href="#route">The API Route — <code>app/api/chat/route.ts</code></a></li>
+    <li><a href="#frontend">The Frontend — <code>app/page.tsx</code></a></li>
+    <li><a href="#flow">The Data Flow End-to-End</a></li>
+    <li><a href="#patterns">Key Patterns You Will Reuse Everywhere</a></li>
+    <li><a href="#postmortem">Debugging Post-Mortem — Every Error Explained</a></li>
+  </ol>
+</div>
+
+
+<!-- ══════════════════ 1. ARCHITECTURE ══════════════════ -->
+<section id="arch">
+  <h2>1 · Architecture Overview</h2>
+
+  <div class="diagram">
+Browser (React)                 Server (Next.js Route)          Anthropic API
+────────────────                ──────────────────────          ─────────────
+useChat hook       ──POST──▶   route.ts               ──▶   Claude
+(manages state)    ◀──stream── streamText()            ◀──   (streams tokens)
+  </div>
+
+  <p>This is a <strong>streaming chat app</strong>. Instead of waiting for Claude to finish writing its entire reply before showing anything, the server streams tokens back to the browser one chunk at a time — the same way you see Claude "type" in real time on claude.ai.</p>
+
+  <p>There are exactly two files that contain all of the application logic:</p>
+
+  <table>
+    <tr><th>File</th><th>Role</th></tr>
+    <tr><td><code>app/api/chat/route.ts</code></td><td>Receives messages from the browser, calls Claude, streams the response back</td></tr>
+    <tr><td><code>app/page.tsx</code></td><td>Renders the chat UI, captures user input, sends it to the route</td></tr>
+  </table>
+</section>
+
+
+<!-- ══════════════════ 2. PACKAGES ══════════════════ -->
+<section id="packages">
+  <h2>2 · The Three Package Roles</h2>
+
+  <pre><code>"@ai-sdk/anthropic": "^3.0.85"   ← Model provider  (server-side only)
+"@ai-sdk/react":     "^3.0.210"  ← React hooks     (client-side only)
+"ai":                "^6.0.208"  ← Core engine     (both sides)</code></pre>
+
+  <p>Each package has one job and one job only. Understanding this boundary prevents the most common class of import errors.</p>
+
+  <table>
+    <tr><th>Package</th><th>What it contains</th><th>What it does NOT contain</th></tr>
+    <tr>
+      <td><span class="pkg provider">@ai-sdk/anthropic</span></td>
+      <td>The <code>anthropic()</code> model factory. Knows how to authenticate and format requests for Anthropic's API.</td>
+      <td>React hooks. Any UI logic. Anything browser-related.</td>
+    </tr>
+    <tr>
+      <td><span class="pkg react">@ai-sdk/react</span></td>
+      <td>The <code>useChat()</code> hook. Manages conversation state, streaming, and sending messages.</td>
+      <td>Model providers. API credentials. Any server logic.</td>
+    </tr>
+    <tr>
+      <td><span class="pkg core">ai</span></td>
+      <td><code>streamText</code>, <code>convertToModelMessages</code>, and all the streaming plumbing that connects the two sides.</td>
+      <td>—</td>
+    </tr>
+  </table>
+
+  <div class="callout rule">
+    <strong>Rule</strong>
+    Never import <code>useChat</code> from <code>@ai-sdk/anthropic</code>. That package has no idea React exists. Hooks always come from <code>@ai-sdk/react</code>.
+  </div>
+</section>
+
+
+<!-- ══════════════════ 3. ROUTE ══════════════════ -->
+<section id="route">
+  <h2>3 · The API Route</h2>
+  <p>File: <code>app/api/chat/route.ts</code></p>
+
+  <pre><code>import { streamText, convertToModelMessages } from 'ai';
+import { anthropic } from '@ai-sdk/anthropic';
+
+const model = anthropic('claude-sonnet-4-6');
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+
+  const result = streamText({
+    model: model,
+    system: systemPrompt,
+    messages: await convertToModelMessages(messages),
+  });
+
+  return result.toUIMessageStreamResponse();
+}</code></pre>
+
+  <h3>Line-by-line breakdown</h3>
+
+  <h4>import &#123; streamText, convertToModelMessages &#125; from 'ai'</h4>
+  <ul>
+    <li><code>streamText</code> — the main function for making a streaming LLM call. You will use this in every AI app that needs real-time output.</li>
+    <li><code>convertToModelMessages</code> — translates the frontend's <code>UIMessage[]</code> format into the <code>ModelMessage[]</code> format that <code>streamText</code> expects. This conversion is required in <code>ai</code> v6 because the client and server use different message schemas.</li>
+  </ul>
+
+  <h4>import &#123; anthropic &#125; from '@ai-sdk/anthropic'</h4>
+  <p><code>anthropic</code> is a factory function. Call it with a model ID string and it returns a model object the SDK knows how to call. The key benefit: you can swap providers with a one-line change.</p>
+  <pre><code>// Anthropic
+import { anthropic } from '@ai-sdk/anthropic';
+const model = anthropic('claude-sonnet-4-6');
+
+// OpenAI — same pattern, different import
+import { openai } from '@ai-sdk/openai';
+const model = openai('gpt-4o');
+
+// Everything else in the route stays identical.</code></pre>
+
+  <h4>export async function POST(req: Request)</h4>
+  <p>Next.js App Router convention. A file at <code>app/api/chat/route.ts</code> that exports a function named <code>POST</code> automatically becomes the endpoint <code>POST /api/chat</code>. No configuration needed. The function name must match the HTTP method exactly.</p>
+
+  <h4>const &#123; messages &#125; = await req.json()</h4>
+  <p>Parses the JSON body sent by <code>useChat</code>. In <code>ai</code> v6, the body is <code>&#123; id, messages, trigger, messageId &#125;</code>. We only need <code>messages</code>.</p>
+
+  <h4>await convertToModelMessages(messages)</h4>
+  <p>This is required because the client and server use different message formats in v6:</p>
+  <table>
+    <tr><th>Format</th><th>Used by</th><th>Shape</th></tr>
+    <tr><td><code>UIMessage[]</code></td><td>Browser / <code>useChat</code></td><td><code>&#123; id, role, parts: [&#123; type, text &#125;] &#125;</code></td></tr>
+    <tr><td><code>ModelMessage[]</code></td><td>Server / <code>streamText</code></td><td><code>&#123; role, content: string | array &#125;</code></td></tr>
+  </table>
+  <div class="callout rule">
+    <strong>Critical</strong>
+    <code>convertToModelMessages</code> is an <code>async</code> function. Always <code>await</code> it. Without <code>await</code>, you pass a <code>Promise</code> object to <code>streamText</code> instead of an array, causing a crash.
+  </div>
+
+  <h4>result.toUIMessageStreamResponse()</h4>
+  <p>Converts the <code>streamText</code> result into an HTTP streaming response that <code>useChat</code> knows how to consume. In <code>ai</code> v6 this replaced the old <code>toDataStreamResponse()</code>.</p>
+
+  <h3>The system prompt</h3>
+  <p>The <code>system</code> field gives Claude its persona and instructions. It is always separate from <code>messages</code> — it is never shown to the user and never appears in the conversation history. This separation is a strict convention across all LLM APIs.</p>
+</section>
+
+
+<!-- ══════════════════ 4. FRONTEND ══════════════════ -->
+<section id="frontend">
+  <h2>4 · The Frontend</h2>
+  <p>File: <code>app/page.tsx</code></p>
+
+  <pre><code>'use client';
+
+import { useState } from 'react';
+import { useChat } from '@ai-sdk/react';
+
+export default function Chat() {
+  const { messages, sendMessage, status } = useChat();
+  const [input, setInput] = useState('');
+  const isLoading = status !== 'ready';
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+    sendMessage({ text: input });
+    setInput('');
+  }
+  // ...
+}</code></pre>
+
+  <h3>Line-by-line breakdown</h3>
+
+  <h4>'use client'</h4>
+  <p>Next.js App Router runs components on the server by default. This directive tells Next.js this component uses browser APIs — React state, event handlers — and must run in the browser. Any file using <code>useState</code>, <code>useEffect</code>, or any hook requires this at the top.</p>
+
+  <h4>useChat()</h4>
+  <p>The core hook from <code>@ai-sdk/react</code>. It manages the entire chat lifecycle. By default it posts to <code>/api/chat</code>, matching the route file exactly.</p>
+
+  <table>
+    <tr><th>Property</th><th>Type</th><th>What it does</th></tr>
+    <tr><td><code>messages</code></td><td><code>UIMessage[]</code></td><td>The full conversation history. Re-renders the component as new tokens arrive during streaming.</td></tr>
+    <tr><td><code>sendMessage</code></td><td><code>function</code></td><td>Sends a message to <code>/api/chat</code> and begins streaming the response.</td></tr>
+    <tr><td><code>status</code></td><td><code>'ready' | 'submitted' | 'streaming' | 'error'</code></td><td>Current state of the connection.</td></tr>
+  </table>
+
+  <h4>const isLoading = status !== 'ready'</h4>
+  <p>In older SDK versions this was a boolean <code>isLoading</code> returned directly by the hook. In v3 it became a <code>status</code> string with four possible values. <code>status !== 'ready'</code> covers both <code>'submitted'</code> (request sent, waiting for first token) and <code>'streaming'</code> (tokens arriving).</p>
+
+  <h4>sendMessage(&#123; text: input &#125;)</h4>
+  <p>The v3 API for submitting a message. The argument is <code>&#123; text: string &#125;</code>. Internally, the hook converts this into a <code>UIMessage</code> with <code>parts: [&#123; type: 'text', text: '...' &#125;]</code> and sends the full conversation history to the API route.</p>
+
+  <h4>const [input, setInput] = useState('')</h4>
+  <p>In older SDK versions <code>useChat</code> owned the input state and returned <code>input</code> and <code>handleInputChange</code>. In v3 it no longer does. You manage input yourself with <code>useState</code> — the same as any controlled form field in React.</p>
+
+  <h3>Rendering messages</h3>
+
+  <pre><code>{messages.map((message) => (
+  &lt;div key={message.id}&gt;
+    {(message.parts ?? [{ type: 'text', text: message.content ?? '' }]).map((part, i) =>
+      part.type === 'text'
+        ? part.text.split('**').map((chunk, j) =>
+            j % 2 === 1
+              ? &lt;strong key={`${i}-${j}`}&gt;{chunk}&lt;/strong&gt;
+              : chunk
+          )
+        : null
+    )}
+  &lt;/div&gt;
+))}</code></pre>
+
+  <table>
+    <tr><th>Element</th><th>Why it exists</th></tr>
+    <tr><td><code>message.id</code></td><td>React requires a stable <code>key</code> when mapping lists. The SDK generates a unique ID for every message.</td></tr>
+    <tr><td><code>message.parts</code></td><td>In <code>ai</code> v6, messages are structured content blocks, not flat strings. Each part has a <code>type</code> field (<code>'text'</code>, <code>'file'</code>, <code>'tool-call'</code>, etc.).</td></tr>
+    <tr><td><code>??</code> fallback</td><td>Nullish coalescing — if <code>parts</code> is undefined, fall back to wrapping the old <code>content</code> string. Guards against edge-case messages.</td></tr>
+    <tr><td><code>split('**')</code> logic</td><td>Minimal inline markdown parser for bold text. Every odd-indexed chunk after splitting on <code>**</code> was between two markers. A real app would use <code>react-markdown</code>.</td></tr>
+  </table>
+</section>
+
+
+<!-- ══════════════════ 5. DATA FLOW ══════════════════ -->
+<section id="flow">
+  <h2>5 · The Data Flow End-to-End</h2>
+  <p>Here is exactly what happens when you type a message and hit Send:</p>
+
+  <ol class="flow">
+    <li><strong>User types</strong> in the input field → <code>setInput</code> updates React state → the field re-renders with the new value.</li>
+    <li><strong>User clicks Send</strong> → <code>handleSubmit</code> fires → <code>sendMessage(&#123; text: "Hello" &#125;)</code> is called.</li>
+    <li><strong><code>useChat</code> builds a UIMessage</strong>: <code>&#123; id: "abc", role: "user", parts: [&#123; type: "text", text: "Hello" &#125;] &#125;</code> → appends it to <code>messages</code> instantly → sets status to <code>'submitted'</code> → <code>POST /api/chat</code> with the full message history.</li>
+    <li><strong>Route receives the POST</strong> → <code>req.json()</code> extracts messages → <code>await convertToModelMessages()</code> converts format → <code>streamText()</code> calls Anthropic with <code>stream: true</code>.</li>
+    <li><strong>Anthropic streams tokens</strong> back → <code>streamText</code> forwards them through <code>toUIMessageStreamResponse()</code> as SSE (Server-Sent Events) chunks.</li>
+    <li><strong><code>useChat</code> receives the stream</strong> → updates the assistant message in <code>messages</code> in real time → status changes to <code>'streaming'</code> → component re-renders with each token (text appears live).</li>
+    <li><strong>Stream ends</strong> → status returns to <code>'ready'</code> → <code>isLoading</code> becomes false → input field re-enables.</li>
+  </ol>
+</section>
+
+
+<!-- ══════════════════ 6. PATTERNS ══════════════════ -->
+<section id="patterns">
+  <h2>6 · Key Patterns You Will Reuse Everywhere</h2>
+  <p>These six patterns from this codebase appear in virtually every AI application you will build. Learn to recognize them on sight.</p>
+
+  <h3>Pattern 1 — Provider + streamText (server)</h3>
+  <p>This is the foundation of every streaming AI API route. Swap the provider import and model string to change models. Everything else stays identical.</p>
+  <pre><code>import { streamText, convertToModelMessages } from 'ai';
+import { anthropic } from '@ai-sdk/anthropic';
+
+const result = streamText({
+  model: anthropic('claude-sonnet-4-6'),
+  system: 'You are a helpful assistant.',
+  messages: await convertToModelMessages(messages),
+});
+
+return result.toUIMessageStreamResponse();</code></pre>
+
+  <h3>Pattern 2 — useChat hook (client)</h3>
+  <p>Your standard starting point for any chat interface. You will add options as apps grow complex, but the destructured values stay the same.</p>
+  <pre><code>const { messages, sendMessage, status } = useChat();
+// With options:
+const { messages, sendMessage, status } = useChat({
+  api: '/api/custom-endpoint',
+  headers: { Authorization: `Bearer ${token}` },
+});</code></pre>
+
+  <h3>Pattern 3 — Controlled input with local state</h3>
+  <p>Always pair <code>useChat</code> with your own <code>useState</code> for the text field, since the hook no longer owns input state.</p>
+  <pre><code>const [input, setInput] = useState('');
+
+function handleSubmit(e) {
+  e.preventDefault();
+  sendMessage({ text: input });
+  setInput(''); // always clear after sending
+}</code></pre>
+
+  <h3>Pattern 4 — UIMessage parts rendering</h3>
+  <p>Every time you render a message, iterate <code>parts</code> and filter by <code>type</code>. As you build more advanced apps (tool calls, file attachments, reasoning traces), you add more type cases here.</p>
+  <pre><code>{message.parts.map((part, i) => {
+  if (part.type === 'text')      return &lt;span key={i}&gt;{part.text}&lt;/span&gt;;
+  if (part.type === 'tool-call') return &lt;ToolCallCard key={i} call={part} /&gt;;
+  return null;
+})}</code></pre>
+
+  <h3>Pattern 5 — System prompt separation</h3>
+  <p>The system prompt always goes in the <code>system</code> field — never inside <code>messages</code>. It is Claude's private instruction set and is never visible to the user.</p>
+  <pre><code>streamText({
+  system: 'You are a race engineer teaching AI concepts...',
+  messages: conversationHistory, // system prompt never appears here
+});</code></pre>
+
+  <h3>Pattern 6 — Streaming response method</h3>
+  <p>Always return <code>toUIMessageStreamResponse()</code> from your route. This is the method that converts the <code>streamText</code> result into a proper HTTP streaming response.</p>
+  <pre><code>// ai v6 — current
+return result.toUIMessageStreamResponse();
+
+// ai v3–v5 — you will see this in older tutorials; it no longer exists
+return result.toDataStreamResponse(); // ← broken in v6</code></pre>
+
+  <div class="callout tip">
+    <strong>Tip</strong>
+    When you search for AI SDK tutorials online, check the date. Tutorials before mid-2025 show the old API (<code>handleSubmit</code>, <code>isLoading</code>, <code>toDataStreamResponse</code>, etc.) which will all fail on the current SDK versions.
+  </div>
+</section>
+
+
+<!-- ══════════════════ 7. POST-MORTEM ══════════════════ -->
+<section id="postmortem">
+  <h2>7 · Debugging Post-Mortem</h2>
+  <p>This app hit 6 distinct errors during setup. Every one was caused by breaking changes in <code>ai</code> v6 and <code>@ai-sdk/react</code> v3 — versions new enough that most tutorials and AI coding assistants do not know about them. Here is each error, its root cause, and the fix.</p>
+
+  <hr>
+
+  <!-- Error 1 -->
+  <div class="error-block">
+    <div class="error-title">
+      <span class="error-badge">ERROR 1</span>
+      <code>useChat</code> imported from the wrong package
+    </div>
+    <pre><code>Module not found: Can't resolve 'useChat' from '@ai-sdk/anthropic'</code></pre>
+    <p><strong>Root cause:</strong> The original code imported <code>useChat</code> from <code>@ai-sdk/anthropic</code>. That package is only a model provider — it has no React code. This is a common confusion because both packages share the <code>@ai-sdk/</code> namespace.</p>
+  </div>
+  <div class="fix-block">
+    <div class="fix-title">✓ Fix</div>
+    <pre><code>// Before
+import { useChat } from '@ai-sdk/anthropic';
+
+// After
+import { useChat } from '@ai-sdk/react';</code></pre>
+    <p><strong>Rule:</strong> <code>@ai-sdk/anthropic</code> = model factory only. <code>@ai-sdk/react</code> = hooks only.</p>
+  </div>
+
+  <hr>
+
+  <!-- Error 2 -->
+  <div class="error-block">
+    <div class="error-title">
+      <span class="error-badge">ERROR 2</span>
+      <code>input.trim()</code> crashes — <code>input</code> is undefined
+    </div>
+    <pre><code>TypeError: Cannot read properties of undefined (reading 'trim')
+    at Chat (app/page.tsx:59)</code></pre>
+    <p><strong>Root cause:</strong> In the old SDK (<code>ai</code> v3), <code>useChat</code> returned <code>&#123; input, handleInputChange, handleSubmit, isLoading &#125;</code> — the hook owned the input field. In <code>@ai-sdk/react</code> v3 (new), the hook no longer manages input state at all. <code>input</code> is simply not returned, so it is <code>undefined</code>.</p>
+  </div>
+  <div class="fix-block">
+    <div class="fix-title">✓ Fix</div>
+    <pre><code>// Before — hook owned the input
+const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
+
+// After — you own the input
+const { messages, sendMessage, status } = useChat();
+const [input, setInput] = useState('');
+const isLoading = status !== 'ready';</code></pre>
+  </div>
+
+  <hr>
+
+  <!-- Error 3 -->
+  <div class="error-block">
+    <div class="error-title">
+      <span class="error-badge">ERROR 3</span>
+      <code>message.parts</code> is undefined
+    </div>
+    <pre><code>TypeError: Cannot read properties of undefined (reading 'map')
+    at message.parts.map (app/page.tsx:39)</code></pre>
+    <p><strong>Root cause:</strong> Two problems at once. First, the rendering code used <code>message.content</code> (a flat string) but <code>ai</code> v6 replaced this with a <code>parts</code> array. Second, <code>sendMessage(&#123; role: 'user', content: input &#125;)</code> is the old API — the v3 hook did not recognize that shape and stored the object as-is, without building the <code>parts</code> array.</p>
+  </div>
+  <div class="fix-block">
+    <div class="fix-title">✓ Fix</div>
+    <pre><code>// Before — old sendMessage API, no parts array built
+sendMessage({ role: 'user', content: input });
+
+// After — correct v6 API; hook builds parts: [{ type: 'text', text: input }]
+sendMessage({ text: input });</code></pre>
+    <pre><code>// Before — rendered flat string
+{message.content}
+
+// After — renders structured parts
+{(message.parts ?? []).map((part, i) =>
+  part.type === 'text' ? part.text : null
+)}</code></pre>
+  </div>
+
+  <hr>
+
+  <!-- Error 4 -->
+  <div class="error-block">
+    <div class="error-title">
+      <span class="error-badge">ERROR 4</span>
+      <code>toDataStreamResponse</code> is not a function
+    </div>
+    <pre><code>TypeError: result.toDataStreamResponse is not a function
+    at POST (app/api/chat/route.ts:283)</code></pre>
+    <p><strong>Root cause:</strong> In <code>ai</code> v3–v5, the streaming result had a method called <code>toDataStreamResponse()</code>. In <code>ai</code> v6, this was renamed to <code>toUIMessageStreamResponse()</code> as part of the new UIMessage architecture. The old method no longer exists on the result object.</p>
+  </div>
+  <div class="fix-block">
+    <div class="fix-title">✓ Fix</div>
+    <pre><code>// Before
+return result.toDataStreamResponse();
+
+// After
+return result.toUIMessageStreamResponse();</code></pre>
+  </div>
+
+  <hr>
+
+  <!-- Error 5 -->
+  <div class="error-block">
+    <div class="error-title">
+      <span class="error-badge">ERROR 5</span>
+      <code>messages.some is not a function</code>
+    </div>
+    <pre><code>TypeError: messages.some is not a function</code></pre>
+    <p><strong>Root cause:</strong> <code>convertToModelMessages</code> is declared as an <code>async function</code>. Without <code>await</code>, calling it returns a <code>Promise</code> object instead of an array. <code>streamText</code> received a <code>Promise</code> and crashed when it tried to call <code>.some()</code> on it — a method that does not exist on <code>Promise</code>.</p>
+    <p>This is a subtle async bug. The code compiles without TypeScript errors but fails at runtime. The tell-tale sign: any method that belongs on an array (<code>.some</code>, <code>.map</code>, <code>.filter</code>) throwing "is not a function" usually means you are calling an async function without <code>await</code>.</p>
+  </div>
+  <div class="fix-block">
+    <div class="fix-title">✓ Fix</div>
+    <pre><code>// Before — passes a Promise to streamText
+messages: convertToModelMessages(messages),
+
+// After — awaits the conversion, passes a real array
+messages: await convertToModelMessages(messages),</code></pre>
+    <p><strong>Rule:</strong> Any time a function is declared <code>async</code> and you intend to use its return value, you must <code>await</code> it.</p>
+  </div>
+
+  <hr>
+
+  <!-- Error 6 -->
+  <div class="error-block">
+    <div class="error-title">
+      <span class="error-badge">ERROR 6</span>
+      404 from Anthropic API — model not found
+    </div>
+    <pre><code>AI_APICallError: statusCode: 404
+"type": "not_found_error"
+"message": "model: claude-3-5-sonnet-20240620"</code></pre>
+    <p><strong>Root cause:</strong> The model ID <code>claude-3-5-sonnet-20240620</code> was deprecated by Anthropic. The API returns a 404 for any model ID that no longer exists. This is not a code bug — it is a version management issue. Model IDs are not permanent.</p>
+  </div>
+  <div class="fix-block">
+    <div class="fix-title">✓ Fix</div>
+    <pre><code>// Before — deprecated model
+const model = anthropic('claude-3-5-sonnet-20240620');
+
+// After — current production model (as of 2026)
+const model = anthropic('claude-sonnet-4-6');</code></pre>
+    <p><strong>Rule:</strong> When an app stops working with a 404 from the Anthropic API and the error message contains a model name, the model has been retired. Check the Anthropic documentation for current model IDs.</p>
+  </div>
+
+  <hr>
+
+  <h3>Summary</h3>
+  <table>
+    <tr><th>#</th><th>Error</th><th>Root Cause</th><th>Fix</th></tr>
+    <tr><td>1</td><td><code>useChat</code> not found</td><td>Wrong package — <code>@ai-sdk/anthropic</code> has no hooks</td><td>Import from <code>@ai-sdk/react</code></td></tr>
+    <tr><td>2</td><td><code>input</code> is undefined</td><td><code>useChat</code> v3 no longer owns input state</td><td>Manage input with <code>useState</code></td></tr>
+    <tr><td>3</td><td><code>message.parts</code> undefined</td><td>Old <code>sendMessage(&#123; role, content &#125;)</code> bypassed parts construction</td><td>Use <code>sendMessage(&#123; text &#125;)</code></td></tr>
+    <tr><td>4</td><td><code>toDataStreamResponse</code> missing</td><td>Method renamed in <code>ai</code> v6</td><td>Use <code>toUIMessageStreamResponse()</code></td></tr>
+    <tr><td>5</td><td><code>messages.some</code> not a function</td><td><code>convertToModelMessages</code> is async — missing <code>await</code></td><td>Add <code>await</code></td></tr>
+    <tr><td>6</td><td>404 from Anthropic API</td><td>Model ID deprecated</td><td>Update to <code>claude-sonnet-4-6</code></td></tr>
+  </table>
+
+  <div class="callout tip" style="margin-top: 28px;">
+    <strong>The Common Thread</strong>
+    Errors 1–5 all came from the same underlying cause: the Vercel AI SDK shipped major breaking changes in v6 (<code>ai</code>) and v3 (<code>@ai-sdk/react</code>). The new versions renamed methods, changed the message schema, and removed features from the hook. Any tutorial, blog post, or AI assistant trained before mid-2025 will show the old patterns that no longer work. Always check the SDK version in <code>package.json</code> against what a tutorial assumes.
+  </div>
+</section>
+
+</body>
+</html>
