@@ -36,7 +36,7 @@ export default function Chat() {
                 ? 'bg-blue-600 text-white rounded-br-md'
                 : 'bg-gray-800 text-gray-100 rounded-bl-md'
             }`}>
-              {(message.parts ?? [{ type: 'text', text: message.content ?? '' }]).map((part, i) =>
+              {(message.parts ?? []).map((part, i) =>
                 part.type === 'text'
                   ? part.text.split('**').map((chunk, j) =>
                       j % 2 === 1 ? <strong key={`${i}-${j}`} className="text-white font-semibold">{chunk}</strong> : chunk
