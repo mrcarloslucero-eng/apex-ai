@@ -344,6 +344,7 @@
     <li><a href="#flow">The Data Flow End-to-End</a></li>
     <li><a href="#patterns">Key Patterns You Will Reuse Everywhere</a></li>
     <li><a href="#postmortem">Debugging Post-Mortem — Every Error Explained</a></li>
+    <li><a href="#deployment">Deploying to Vercel</a></li>
   </ol>
 </div>
 
@@ -793,6 +794,100 @@ const model = anthropic('claude-sonnet-4-6');</code></pre>
     <strong>The Common Thread</strong>
     Errors 1–5 all came from the same underlying cause: the Vercel AI SDK shipped major breaking changes in v6 (<code>ai</code>) and v3 (<code>@ai-sdk/react</code>). The new versions renamed methods, changed the message schema, and removed features from the hook. Any tutorial, blog post, or AI assistant trained before mid-2025 will show the old patterns that no longer work. Always check the SDK version in <code>package.json</code> against what a tutorial assumes.
   </div>
+
+  <hr>
+
+  <!-- Error 7 — Build-time TypeScript -->
+  <div class="error-block">
+    <div class="error-title">
+      <span class="error-badge">ERROR 7</span>
+      TypeScript build error — <code>message.content</code> does not exist
+    </div>
+    <pre><code>Type error: Property 'content' does not exist on type 'UIMessage&lt;unknown, UIDataTypes, UITools&gt;'.
+./app/page.tsx:39:65</code></pre>
+    <p><strong>Root cause:</strong> The fallback <code>message.content ?? ''</code> was added as a safety net in case a message lacked a <code>parts</code> array. While this never caused a runtime crash locally (Next.js dev mode is more lenient), the production TypeScript compiler correctly rejected it — <code>content</code> is not a field on the <code>UIMessage</code> type in <code>ai</code> v6. The type simply does not have that property.</p>
+    <p>This is an important distinction: <strong>local dev can hide type errors that production builds catch</strong>. The app ran fine with <code>npm run dev</code> but failed during <code>npm run build</code> on Vercel.</p>
+  </div>
+  <div class="fix-block">
+    <div class="fix-title">✓ Fix</div>
+    <pre><code>// Before — references a field that doesn't exist on UIMessage
+{(message.parts ?? [{ type: 'text', text: message.content ?? '' }]).map(...)}
+
+// After — falls back to an empty array; parts is always present with correct sendMessage usage
+{(message.parts ?? []).map(...)}</code></pre>
+    <p><strong>Rule:</strong> Always run <code>npm run build</code> locally before deploying. Dev mode skips certain TypeScript checks that the production build enforces.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════ 8. DEPLOYMENT ══════════════════ -->
+<section id="deployment">
+  <h2>8 · Deploying to Vercel</h2>
+  <p>This app is deployed at <code>apex-ai-mrcarloslucero-eng.vercel.app</code> — accessible on any device, anywhere, with no installation required. Here is how the deployment was set up and how it works going forward.</p>
+
+  <h3>Why Vercel</h3>
+  <p>Vercel is made by the same team that builds Next.js, so deploying a Next.js app requires zero configuration. It auto-detects the framework, runs the build, and serves the result. The free tier is more than enough for a personal project.</p>
+
+  <h3>How the deployment pipeline works</h3>
+  <ol class="flow">
+    <li>You push a commit to GitHub (<code>git push</code>)</li>
+    <li>Vercel detects the new commit automatically via a GitHub webhook</li>
+    <li>Vercel runs <code>npm run build</code> on their servers (this is where TypeScript errors are caught)</li>
+    <li>If the build passes, the new version goes live at your URL within about 60 seconds</li>
+    <li>If the build fails, the previous working version stays live — your URL never goes down</li>
+  </ol>
+
+  <div class="callout tip">
+    <strong>Key insight</strong>
+    You never have to manually deploy. The workflow is just: make a change → commit → push → Vercel handles the rest. Every push to <code>master</code> triggers a new deployment.
+  </div>
+
+  <h3>The API key — how it works in production</h3>
+  <p>Your <code>.env.local</code> file holds your <code>ANTHROPIC_API_KEY</code> locally but is never committed to GitHub (it is in <code>.gitignore</code>). On Vercel, the key is stored as an <strong>Environment Variable</strong> in the project settings — Vercel injects it into the build and runtime environment so the API route can read it with <code>process.env.ANTHROPIC_API_KEY</code>.</p>
+
+  <table>
+    <tr><th>Environment</th><th>Where the key comes from</th></tr>
+    <tr><td>Local (<code>npm run dev</code>)</td><td><code>.env.local</code> file — never committed</td></tr>
+    <tr><td>Production (Vercel)</td><td>Vercel Environment Variables dashboard</td></tr>
+  </table>
+
+  <div class="callout rule">
+    <strong>Never commit your API key</strong>
+    If a key is ever accidentally committed to a public repo, rotate it immediately at console.anthropic.com. Anyone who finds it in git history can use it at your expense.
+  </div>
+
+  <h3>Updating the app after changes</h3>
+  <p>Whenever you make changes to the code, the update process is always the same three commands:</p>
+  <pre><code>git add &lt;files&gt;
+git commit -m "describe what changed"
+git push</code></pre>
+  <p>Vercel picks up the push and redeploys automatically. Your live URL updates within about a minute.</p>
+
+  <h3>Session persistence — what the app remembers</h3>
+  <p>The app currently has <strong>no persistent memory</strong>. Each time you open the URL — whether on your phone, computer, or a new tab — the conversation starts fresh. This is because there is no database or authentication layer.</p>
+
+  <table>
+    <tr><th>What persists</th><th>What does not persist</th></tr>
+    <tr><td>The system prompt (Race Engineer persona, your student profile, all the teaching rules)</td><td>Your conversation history between sessions</td></tr>
+    <tr><td>The app itself — always available at the URL</td><td>Progress through the curriculum</td></tr>
+  </table>
+
+  <p><strong>Practical workaround:</strong> When starting a new session, open with a short context line like: <em>"We finished attention mechanisms last time. Let's move on to positional encoding."</em> The Race Engineer will pick up immediately — your profile is baked into the system prompt so it always knows your level.</p>
+
+  <p>To add real persistence in the future you would need a <strong>database</strong> (e.g. Vercel Postgres, Supabase) to store conversation history and <strong>authentication</strong> (e.g. Clerk, NextAuth) to identify you across devices — a significant but learnable next step.</p>
+
+  <h3>GitHub setup commands reference</h3>
+  <pre><code># Check what remote your repo points to
+git remote -v
+
+# Update the remote URL if it was set incorrectly
+git remote set-url origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
+
+# Push your local branch to GitHub for the first time
+git push -u origin master
+
+# All subsequent pushes (after the first)
+git push</code></pre>
 </section>
 
 </body>
